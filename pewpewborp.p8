@@ -8,6 +8,8 @@ tubes={}
 tube_num=0
 
 --bog vars
+bog={}
+bog_num=0
 bog_health=4
 bog_dmgcount=0
 boghealth_x=104
@@ -15,6 +17,11 @@ boghealth_y=0
 bog_x=104
 bog_y=64
 bog_v=2
+
+--bog_bullets
+bogbullets={}
+bogbullet_num=128
+bogbullet_ind=1
 
 --star vars
 topstars={}
@@ -48,6 +55,10 @@ bird_spr=12
 gravity=0.1
 jump_force=2
 pressed=false
+bird_bar={}
+vic_health=2
+vichealth_x=0
+vichealth_y=-2
 
 --bullet vars
 bullets={}
@@ -81,15 +92,19 @@ function _init()
 		add_mid(i*32)
 		add_bot(i*32)
 	end
+	--ground objs
 	for i=0,ground_num do
 		add_ground(i*32)
 	end
+	--cloud objs
 	for i=0,cloud_num do
 		add_cloud(i*128)
 	end
+	--hill objs
 	for i=0,hill_num do
 		add_hill(i*128)
 	end
+	--bullet objs
 	for i=0, bullet_num do
 	    add_bullet()
 	end
@@ -130,11 +145,15 @@ function reset_game()
 
 	score=0
 	
+	--resets birds position
 	bird_x=10
 	bird_y=10
 	bird_v=0
 	bird_spr=12
 	
+	--resets bog damage
+	bog_dmgcount=0
+
 	end_time=0
 	end_y=-12
 	end_tar=22	
@@ -160,6 +179,7 @@ function add_mid(_x)
 	})
 end
 
+--makes bot★ obj
 function add_bot(_x)
 	add(botstars, {
 		x=_x,
@@ -206,6 +226,7 @@ function add_tube()
 	end
 end
 
+--adds bog healthbars
 function add_ebar()
 	for i=0,bar_num do
 		add(bogbars,{
@@ -348,6 +369,7 @@ function game_update()
 	if(btnp(2,0))then
 		--add_bullet(bird_x+8,bird_y+4)
 		bird_shoot(bird_x, bird_y)
+		sfx(5)
 	end
 	
 	--for every bullet
@@ -421,12 +443,28 @@ function game_draw()
 		end
 	end
 	
-	boghealth(bog_health,boghealth_x,boghealth_y)
+	boghealth(bog_health,
+		boghealth_x,
+		boghealth_y)
+		
+	vichealth(vic_health,
+		vichealth_x,
+		vichealth_y)
 		
 	spr(bird_spr,bird_x,bird_y,2,2)
 	rectfill(64,10,66,14,7)
 	print(score,64,10,0)
 
+end
+
+function vichealth(vic_health,
+	_x,_y)
+		if(vic_health==2)then
+			spr(217,_x,_y,2,1)
+		end
+		if(vic_health==1)then
+			spr(219,_x,_y,2,1)
+		end
 end
 
 --draws bog's health bar
@@ -503,12 +541,44 @@ bullet_ind+=1
 
 end
 
+function bog_move()
+	box_x+=bog_v
+	box_y+=bog_v
+
+
+end
+
+function bog_shoot(_x,_y)
+--set new bullet position
+bogbullets[
+	bogbullet_ind].x=_x-8
+bogbullets[
+	bogbullet-ind].y=_y-8
+bogbullets[
+	bogbullet_ind].bogvisible=true
+bogbullet_ind+=1
+
+	if(bogbullet_ind>
+		bogbullet_num)then
+			bogbullet_ind=1
+	end
+end
+
 function add_bullet()
 	add(bullets,{
 		x=-10,
 		y=-10,
 		v=2,
 		visible=false
+	})
+end
+
+function add_bogbullet()
+	add(bogbullets,{
+	x=-15,
+	y=-15,
+	v=2,
+	bogvisible=false
 	})
 end
 -->8
@@ -969,6 +1039,8 @@ __sfx__
 0402000014051160511a0511d05100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 940400000705106051060531105300000000000000000000000000000000000000000000000000000000000000000000000000000005000000000000000000000000000000000000000000000000000000000000
 570900001505309053000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-5d05000022154251542a1540000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+5c05000022154251542a154000000000000000000000000000000000000000000000000001b200272000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 010c00001b1511a151141511a151191511315115151151510b1000a1000a100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-091000001b0001f000240003f00000000000000000000000160002b00000000000000000000000230000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0810000038900389003895037950349403390030900309003190028800278002780016d0021900239001c9001d9001c2002020002e0004e000de001ce0025e0030e001e900209002390000000249002790000000
+00100000000000e400166500b6501e65000000000000000000000000000000000000000000000015600186001b6001c6001e6001f600226002260023600236002460000000000000000000000000000000000000
+0010000000000000000000000000042500d25017250232502c2500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
