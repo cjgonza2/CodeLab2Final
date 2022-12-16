@@ -9,7 +9,7 @@ tube_num=0
 
 --bog vars
 bog_health=4
-bog_dmgcount=0
+bog_dmgcount=15
 boghealth_x=104
 boghealth_y=0
 bog_x=104
@@ -86,6 +86,8 @@ end_tar=22
 
 score=0
 best=0
+
+win=false
 
 state="menu"
 
@@ -166,6 +168,8 @@ function reset_game()
 	bog_x=104
 	bog_y=64
 	bog_dmgcount=0
+	bogx_v=0.5
+	bogy_v=1
 
 	end_time=0
 	end_y=-12
@@ -251,18 +255,7 @@ function add_ebar()
 end
 ---------------------------
 
-
 ---------------------------
---check col b/t bird and tube
-function overlap(_t)
-	if(bird_x+8>=_t.x and
-		bird_x<=_t.x+_t.hit_w and
-		bird_y+8>=_t.y and
-		bird_y<=_t.y+_t.hit_h)then
-		return true
-	end
-end
-
 --col b/t vic and bog
 function bogcol(b_x,b_y,
 	v_x,v_y,
@@ -276,6 +269,7 @@ function bogcol(b_x,b_y,
  			return true
  	end
 end
+---------------------------
 
 --check overlap bog/bullet
 function b_bogcol(_b,b_x,b_y,
@@ -441,19 +435,6 @@ function game_update()
 			end --end of "if b_bogcol"
    --------------------------
    
-   --------------------------
-   --for t in all(tubes)do
-   	--if(b_overlap(b,t))do
-    	--b.visible=false
-    	--bog_dmgcount+=1
-    	--t.alive=false
-    	--tube_num+=1
-    	--deli(tubes,i)
-   		--add_tube()
-    --end
-   --end --end of "for t in all"
-   ---------------------------
-   
    ---------------------------
    if(b.x>128)then
    	b.visible=false
@@ -576,6 +557,8 @@ function boghealth(health,_x,_y)
 			spr(236,_x,_y,3,1)
 	end
 	if(bog_dmgcount>=16)then
+		win=true
+		state="end"
 	end
 end
 
@@ -639,19 +622,24 @@ function bog_move()
 	--same for x dir, but for 
 	--left or right of
 	--screen.
+	---------------------------
 	if(bog_x>=104 
 		or bog_x <= 0)then
 			bogx_v=-bogx_v
 	end
+	---------------------------
 			
 	--reverse y dir if it
 	--reaches the bottom or
 	--top of screen.
+	---------------------------
 	if(bog_y>=104
 		or bog_y<=0)then
 			bogy_v=-bogy_v
 	end
-			
+	---------------------------
+	
+	
 
 end
 
@@ -659,6 +647,7 @@ function bogtimer()
 	bog_timer-=1
 	if (bog_timer <= 0)then
 		bog_shoot(bog_x,bog_y)
+		sfx(5)
 		bog_timer=50
 	end
 end
@@ -688,6 +677,9 @@ function add_bullet()
 	})
 end
 
+--adds bullets to bog bullet 
+--table
+----------------------------
 function add_bogbullet()
 	add(bogbullets,{
 	x=-15,
@@ -696,6 +688,8 @@ function add_bogbullet()
 	bogvisible=false
 	})
 end
+----------------------------`
+
 -->8
 --menu
 
@@ -836,7 +830,14 @@ end
 
 function end_update()
 	
-	bounce_back()
+	if (win==false)then
+		bounce_back()
+	end
+	
+	if(win)then
+		bog_bounce()
+	end
+	
 	
 	end_time+=1
 	
@@ -856,17 +857,30 @@ function end_draw()
 	
 	spr(224,29,end_y,9,2)
 	
-	if(end_time>35)then
-		print("score: "..score.."",45,50,0)
+	if (win)then
+		print("you stopped bog!",35,50,0)
+		print("x to play again",38,80,0)
 	end
 	
-	if(end_time>50)then
-			print("best: "..best.."",47,60,0)
-	end
+	---------------------------
+	--if(end_time>35)then
+		--print("score: "..score.."",45,50,0)
+	--end
+	---------------------------
 	
-	if(end_time>65)then
-			print("x to restart",38,80,0)
+	---------------------------
+	--if(end_time>50)then
+			--print("best: "..best.."",47,60,0)
+	--end
+	---------------------------
+	
+	if(win==false)then
+		print("bog is victorious!",30,50,0)
+		print("x to restart",38,80,0)
 	end
+	--if(end_time>65)then
+			--print("x to restart",38,80,0)
+	--end
 
 end
 
@@ -879,6 +893,14 @@ function bounce_back()
 		bird_y+=bird_v
 	end
 
+end
+
+--juice for when bog dies.
+function bog_bounce()
+	gravity=1.5
+	bogy_v+=gravity
+	bog_x+=2+rnd(4)
+	bog_y+=bogy_v
 end
 
 function end_sfx()
